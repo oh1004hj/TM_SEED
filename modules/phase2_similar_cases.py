@@ -285,3 +285,36 @@ def run_similar_case_analysis(sheets_client, sheet_url, current_result):
     
     # UI 표시
     display_similar_cases(similar_cases)
+    
+    # similar_cases 반환 (phase2_script_generator에서 사용)
+    return similar_cases
+```
+
+**작업 방법:**
+1. `phase2_similar_cases.py` 파일 열기
+2. 마지막 줄 (218줄) 다음에 빈 줄 추가
+3. `    return similar_cases` 입력 (들여쓰기 4칸!)
+
+---
+
+## 📋 전체 작업 체크리스트
+
+### ✅ 완료된 작업
+```
+□ phase2_script_generator.py 생성 (A-1단계)
+```
+
+### 🔲 남은 작업
+
+**A-2단계:**
+```
+□ app.py 수정 1: import 추가 (10-11줄)
+□ app.py 수정 2: Phase 2 호출 코드 수정 (573-603줄)
+□ phase2_similar_cases.py 수정: return 추가 (219줄)
+```
+
+**A-3단계: GitHub Push**
+```
+□ git add .
+□ git commit -m "Phase 2 개선: 실전 스크립트 생성 기능 추가"
+□ git push origin main

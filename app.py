@@ -8,6 +8,7 @@ import os
 import tempfile
 import base64
 from modules import phase2_similar_cases
+from modules import phase2_script_generator
 
 # 페이지 설정
 st.set_page_config(
@@ -570,16 +571,29 @@ def main():
         st.info(억양가이드)
         
         # ============================================================
-        # Phase 2: 유사 성공 케이스 검색
+        # Phase 2: 유사 성공 케이스 검색 + 실전 스크립트
         # ============================================================
         if sheets_client:
             try:
                 sheet_url = st.secrets["google"]["sheet_url"]
-                phase2_similar_cases.run_similar_case_analysis(
+                
+                # Phase 2-1: 유사 케이스 검색
+                similar_cases = phase2_similar_cases.run_similar_case_analysis(
                     sheets_client=sheets_client,
                     sheet_url=sheet_url,
                     current_result=result
                 )
+                
+                # Phase 2-2: 실전 스크립트 생성
+                if similar_cases and len(similar_cases) > 0:
+                    phase2_script_generator.display_practical_script(
+                        model=model,
+                        similar_cases=similar_cases,
+                        current_result=result
+                    )
+                else:
+                    st.info("💡 유사 케이스가 충분하지 않아 실전 스크립트를 생성할 수 없습니다.")
+                    
             except Exception as e:
                 st.warning(f"⚠️ 유사 케이스 검색 중 오류: {str(e)}")
         else:
