@@ -1,0 +1,61 @@
+# Streamlit
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 환경 변수
+.env
+.env.local
+
+# 임시 파일
+*.tmp
+*.bak
+*.swp
+*~
+
+# 오디오 파일 (용량이 크므로)
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.flac
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Service Account Keys
+*.json
+!requirements.txt
