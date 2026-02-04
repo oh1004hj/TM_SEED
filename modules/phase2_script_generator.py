@@ -146,19 +146,3 @@ def display_practical_script(model, similar_cases, current_result):
             file_name="tm_script.md",
             mime="text/markdown"
         )
-```
-
-**3. 파일을 아래 경로에 저장**
-```
-C:\Users\SKTelecom\Downloads\TM_SEED\modules\phase2_script_generator.py
-```
-
----
-
-### ✅ A-1단계 완료 확인
-
-**저장 후 확인사항:**
-```
-□ 파일명이 정확한가? phase2_script_generator.py
-□ 저장 위치가 맞는가? TM_SEED\modules\ 폴더 안
-□ 파일 크기가 0KB가 아닌가? (내용이 있는가)
