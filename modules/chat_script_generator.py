@@ -954,7 +954,7 @@ def show_chat_script_page(model=None, sheets_client=None):
     user_request = st.text_area(
         "원하는 스크립트를 요청하세요",
         height=100,
-        placeholder="예: 키즈폰 TM 스크립트\n예: S26가망 고객용 스크립트\n예: 무약정 고객 기변 스크립트\n예: 아이폰 17가망 고객용 스크립트",
+        placeholder="예: 키즈폰 가망 스크립트\n예: S26 가망 스크립트\n예: 무약정 기변 가망 스크립트",
         key="chat_request"
     )
     
