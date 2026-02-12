@@ -14,6 +14,40 @@ from core import unified_script_database as db
 from core import unified_script_generator as generator
 
 # ============================================================
+# CSS 스타일 (버튼 색상)
+# ============================================================
+
+def inject_button_styles():
+    """버튼 색상 CSS 스타일 주입"""
+    st.markdown("""
+    <style>
+        /* 우수사례 검색 버튼 - 파란색 */
+        button[kind="primary"] {
+            background-color: #0068C9 !important;
+            border-color: #0068C9 !important;
+            color: white !important;
+        }
+        
+        button[kind="primary"]:hover {
+            background-color: #0056b3 !important;
+            border-color: #0056b3 !important;
+        }
+        
+        /* AI 프리미엄 버튼 - 진한 회색 */
+        button[kind="secondary"] {
+            background-color: #4A4A4A !important;
+            border-color: #4A4A4A !important;
+            color: white !important;
+        }
+        
+        button[kind="secondary"]:hover {
+            background-color: #333333 !important;
+            border-color: #333333 !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+# ============================================================
 # 텍스트 정리 함수 (TTS용)
 # ============================================================
 
@@ -74,40 +108,8 @@ def format_script_with_opening_options(script_text, coaching=""):
 """
     
     # 4단 구조 조립 (섹션별 구분 마커 추가)
-    formatted = f"""<SECTION:INFO>
-### 📌 미리 확인해야 할 사항
-[TM 대상군 분류 및 사전 준비사항]
-
-**새학기 초등, 12세 이하 010**
-- A그룹 (12세 이하 가족010 가망군): 28~50세 부모가망 회선 중 자사 자녀회선이 없고, 초등용 키즈App. 월 사용일수 5일 이상
-- B그룹 (기기변경 가망군): 매장 단골 고객으로 전화 수신자 및 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
-
-**타사단골**
-- A그룹 (MNP/가족MNP/초고속 동판): 매장에서 등록한 타사 단골고객 *14세 미만 제외
-
-**무약정**
-- A그룹 (기기변경 가망군): 무약정, 잔여할부금 20만원 이하
-- B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
-
-**VIP 기변**
-- A그룹 (VIP 기기변경 가망군): SKT 장기사용 우수 고객 중 해지이탈 위험이 높은 고객
-
-**갤S26 가망고객 1순위**
-- A그룹(갤S26 1순위): S22~S24 & 폴더블4~5 사용, 출시 D+7 內 구매, 잔여할부금 20만원 이하, 단골매장=최근구입매장
-- B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
-
-**갤S26 가망고객 2순위**
-- A그룹(갤S26 2순위): S22~S24 & 폴더블4~5 사용, 기기사용 24개월 경과, 잔여할부금 20만원 이하, 단골매장=최근구입매장
-- B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
-
-**갤S26 가망고객 Sim MNP**
-- A그룹(갤S26 Sim MNP): K위약금 면제 기간 중 SIM MNP로 인입, USIM 단독개통 고객이거나 중고MNP & 현재 사용단말 최초 출시일자 24개월 경과된 고객
-- B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
-</SECTION:INFO>
-
----
-
-<SECTION:SCRIPT>
+    # INFO 섹션을 맨 아래로 이동
+    formatted = f"""<SECTION:SCRIPT>
 ### 💬 TM 스크립트
 
 #### 1️⃣ 오프닝 (3초 이내) - 아래 옵션 중 선택
@@ -154,16 +156,51 @@ def format_script_with_opening_options(script_text, coaching=""):
 - 매장 상황에 맞게 랜드마크를 구체적으로 언급하면 고객 기억 환기에 효과적
 - TM 초보자는 옵션 2로 시작, 익숙해지면 옵션 1 활용 권장
 </SECTION:TIP>
+
+---
+
+<SECTION:INFO>
+### 📌 TM대상군 분류 및 사전 준비사항
+
+**새학기 초등, 12세 이하 010**
+- A그룹 (12세 이하 가족010 가망군): 28~50세 부모가망 회선 중 자사 자녀회선이 없고, 초등용 키즈App. 월 사용일수 5일 이상
+- B그룹 (기기변경 가망군): 매장 단골 고객으로 전화 수신자 및 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
+
+**타사단골**
+- A그룹 (MNP/가족MNP/초고속 동판): 매장에서 등록한 타사 단골고객 *14세 미만 제외
+
+**무약정**
+- A그룹 (기기변경 가망군): 무약정, 잔여할부금 20만원 이하
+- B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
+
+**VIP 기변**
+- A그룹 (VIP 기기변경 가망군): SKT 장기사용 우수 고객 중 해지이탈 위험이 높은 고객
+
+**갤S26 가망고객 1순위**
+- A그룹(갤S26 1순위): S22~S24 & 폴더블4~5 사용, 출시 D+7 內 구매, 잔여할부금 20만원 이하, 단골매장=최근구입매장
+- B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
+
+**갤S26 가망고객 2순위**
+- A그룹(갤S26 2순위): S22~S24 & 폴더블4~5 사용, 기기사용 24개월 경과, 잔여할부금 20만원 이하, 단골매장=최근구입매장
+- B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
+
+**갤S26 가망고객 Sim MNP**
+- A그룹(갤S26 Sim MNP): K위약금 면제 기간 중 SIM MNP로 인입, USIM 단독개통 고객이거나 중고MNP & 현재 사용단말 최초 출시일자 24개월 경과된 고객
+- B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준
+</SECTION:INFO>
 """
     return formatted
 
 def display_script_with_colors(script_text):
     """
     스크립트를 섹션별 색상으로 구분하여 Streamlit에 표시
-    INFO 섹션은 펼쳐보기(Expander)로 표시 (중첩 없이 독립적으로)
+    SCRIPT → COACHING → TIP 순서로 먼저 표시하고, INFO는 마지막에 표시
     
     Args:
         script_text: 섹션 마커가 포함된 스크립트
+    
+    Returns:
+        info_section: INFO 섹션 내용 (별도로 표시하기 위해)
     """
     import re
     
@@ -178,7 +215,10 @@ def display_script_with_colors(script_text):
     # 섹션별로 분리
     sections = re.split(r'<SECTION:(\w+)>|</SECTION:\w+>', script_text)
     
+    # 섹션 내용 저장
+    section_contents = {}
     current_section = None
+    
     for part in sections:
         if not part or part.strip() == "---":
             continue
@@ -188,59 +228,66 @@ def display_script_with_colors(script_text):
             current_section = part
             continue
         
-        # 내용 표시
+        # 내용 저장
         if current_section:
-            bg_color = section_colors.get(current_section, "#ffffff")
+            section_contents[current_section] = part
+    
+    # 1. SCRIPT, COACHING, TIP 먼저 표시
+    for section_name in ["SCRIPT", "COACHING", "TIP"]:
+        if section_name in section_contents:
+            bg_color = section_colors.get(section_name, "#ffffff")
+            content = section_contents[section_name]
             
-            # INFO 섹션은 펼쳐보기로 표시 (중첩 없이)
-            if current_section == "INFO":
-                # 헤더만 표시
-                st.markdown("### 📌 미리 확인해야 할 사항")
-                st.caption("[TM 대상군 분류 및 사전 준비사항]")
-                
-                # 캠페인별 데이터
-                campaigns = {
-                    "새학기 초등, 12세 이하 010": [
-                        "A그룹 (12세 이하 가족010 가망군): 28~50세 부모가망 회선 중 자사 자녀회선이 없고, 초등용 키즈App. 월 사용일수 5일 이상",
-                        "B그룹 (기기변경 가망군): 매장 단골 고객으로 전화 수신자 및 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
-                    ],
-                    "타사단골": [
-                        "A그룹 (MNP/가족MNP/초고속 동판): 매장에서 등록한 타사 단골고객 *14세 미만 제외"
-                    ],
-                    "무약정": [
-                        "A그룹 (기기변경 가망군): 무약정, 잔여할부금 20만원 이하",
-                        "B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
-                    ],
-                    "VIP 기변": [
-                        "A그룹 (VIP 기기변경 가망군): SKT 장기사용 우수 고객 중 해지이탈 위험이 높은 고객"
-                    ],
-                    "갤S26 가망고객 1순위": [
-                        "A그룹(갤S26 1순위): S22~S24 & 폴더블4~5 사용, 출시 D+7 內 구매, 잔여할부금 20만원 이하, 단골매장=최근구입매장",
-                        "B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
-                    ],
-                    "갤S26 가망고객 2순위": [
-                        "A그룹(갤S26 2순위): S22~S24 & 폴더블4~5 사용, 기기사용 24개월 경과, 잔여할부금 20만원 이하, 단골매장=최근구입매장",
-                        "B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
-                    ],
-                    "갤S26 가망고객 Sim MNP": [
-                        "A그룹(갤S26 Sim MNP): K위약금 면제 기간 중 SIM MNP로 인입, USIM 단독개통 고객이거나 중고MNP & 현재 사용단말 최초 출시일자 24개월 경과된 고객",
-                        "B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
-                    ]
-                }
-                
-                # 각 캠페인을 독립적인 Expander로 표시 (중첩 없음)
-                for campaign_name, groups in campaigns.items():
-                    with st.expander(f"▶ {campaign_name}"):
-                        for group in groups:
-                            st.markdown(f"- {group}")
-            else:
-                # 다른 섹션은 기존 방식대로 색상 박스로 표시
-                st.markdown(
-                    f'<div style="background-color: {bg_color}; padding: 20px; border-radius: 8px; border-left: 4px solid #1f77b4; margin: 10px 0;">{part}</div>',
-                    unsafe_allow_html=True
-                )
-        else:
-            st.markdown(part)
+            st.markdown(
+                f'<div style="background-color: {bg_color}; padding: 20px; border-radius: 8px; border-left: 4px solid #1f77b4; margin: 10px 0;">{content}</div>',
+                unsafe_allow_html=True
+            )
+    
+    # 2. INFO 섹션 반환 (나중에 다운로드 버튼 후 표시)
+    return section_contents.get("INFO", None)
+
+def display_info_section():
+    """
+    TM대상군 분류 및 사전 준비사항 섹션 표시
+    """
+    st.markdown("### 📌 TM대상군 분류 및 사전 준비사항")
+    
+    # 캠페인별 데이터
+    campaigns = {
+        "새학기 초등, 12세 이하 010": [
+            "A그룹 (12세 이하 가족010 가망군): 28~50세 부모가망 회선 중 자사 자녀회선이 없고, 초등용 키즈App. 월 사용일수 5일 이상",
+            "B그룹 (기기변경 가망군): 매장 단골 고객으로 전화 수신자 및 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
+        ],
+        "타사단골": [
+            "A그룹 (MNP/가족MNP/초고속 동판): 매장에서 등록한 타사 단골고객 *14세 미만 제외"
+        ],
+        "무약정": [
+            "A그룹 (기기변경 가망군): 무약정, 잔여할부금 20만원 이하",
+            "B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
+        ],
+        "VIP 기변": [
+            "A그룹 (VIP 기기변경 가망군): SKT 장기사용 우수 고객 중 해지이탈 위험이 높은 고객"
+        ],
+        "갤S26 가망고객 1순위": [
+            "A그룹(갤S26 1순위): S22~S24 & 폴더블4~5 사용, 출시 D+7 內 구매, 잔여할부금 20만원 이하, 단골매장=최근구입매장",
+            "B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
+        ],
+        "갤S26 가망고객 2순위": [
+            "A그룹(갤S26 2순위): S22~S24 & 폴더블4~5 사용, 기기사용 24개월 경과, 잔여할부금 20만원 이하, 단골매장=최근구입매장",
+            "B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
+        ],
+        "갤S26 가망고객 Sim MNP": [
+            "A그룹(갤S26 Sim MNP): K위약금 면제 기간 중 SIM MNP로 인입, USIM 단독개통 고객이거나 중고MNP & 현재 사용단말 최초 출시일자 24개월 경과된 고객",
+            "B그룹 (가족MNP 가망군): 매장 단골 고객으로 전화 수신자의 가족 가망군 탐색, 직전 구매 이력이 2년 이상 경과했거나, 단말 할부금 잔액이 부담이 없는 수준"
+        ]
+    }
+    
+    # 각 캠페인을 독립적인 Expander로 표시
+    for campaign_name, groups in campaigns.items():
+        with st.expander(f"▶ {campaign_name}"):
+            for group in groups:
+                st.markdown(f"- {group}")
+
 
 # ============================================================
 # HTML 변환 함수
@@ -411,16 +458,29 @@ def markdown_to_html(markdown_text):
 def markdown_to_html_premium(markdown_text):
     """
     AI 프리미엄 전용 HTML 변환
-    - A그룹/B그룹 레이블만 빨간색, 내용은 검정색
-    - 오프닝 옵션 레이블만 빨간색, 내용은 검정색
-    - 글씨 크기 14px 균일화
-    - ai프리미엄_베스트_양식.html 스타일 적용
+    - SECTION 태그 및 </> 완전 제거
+    - "미리 확인해야 할 사항" → "TM대상군 분류 및 사전 준비사항"
+    - [TM 대상군 분류 및 사전 준비사항] 중복 제목 삭제
+    - 비언어적 코칭 소제목 굵게 (말투 및 억양, 고객 반응 대처법 등)
+    - 불필요한 # 삭제
     """
     import re
     
+    # 1. SECTION 태그 완전히 제거
+    cleaned_text = re.sub(r'</?SECTION:\w+>', '', markdown_text)
+    cleaned_text = re.sub(r'SECTION:\w+', '', cleaned_text)
+    cleaned_text = re.sub(r'</>', '', cleaned_text)
+    
+    # 2. "미리 확인해야 할 사항" → "TM대상군 분류 및 사전 준비사항"
+    cleaned_text = cleaned_text.replace("### 📌 미리 확인해야 할 사항", "### 📌 TM대상군 분류 및 사전 준비사항")
+    cleaned_text = cleaned_text.replace("미리 확인해야 할 사항", "TM대상군 분류 및 사전 준비사항")
+    
+    # 3. 중복 제목 삭제
+    cleaned_text = cleaned_text.replace("[TM 대상군 분류 및 사전 준비사항]", "")
+    
     # 섹션 마커 제거 및 색상 매핑
     section_colors = {
-        "INFO": "#d1ecf1",      # 파란색 - 미리 확인
+        "INFO": "#d1ecf1",      # 파란색 - TM대상군
         "SCRIPT": "#d4edda",    # 초록색 - TM 스크립트
         "COACHING": "#fff3cd",  # 노란색 - 비언어적 코칭
         "TIP": "#f8f9fa"        # 회색 - 활용 Tip
@@ -429,75 +489,144 @@ def markdown_to_html_premium(markdown_text):
     # HTML 본문 구성
     html_body = ""
     
-    # 섹션별로 분리 및 처리
-    sections = re.split(r'<SECTION:(\w+)>|</SECTION:\w+>', markdown_text)
+    # 섹션별로 분리 (---)
+    sections = cleaned_text.split("---")
     
-    current_section = None
     for part in sections:
-        if not part or part.strip() == "---":
-            continue
-        
-        # 섹션 태그 감지
-        if part in section_colors:
-            current_section = part
-            continue
-        
-        # 내용 처리
-        if current_section:
-            bg_color = section_colors.get(current_section, "#ffffff")
-        else:
-            bg_color = "#ffffff"
-        
         content = part.strip()
         
         # 빈 섹션 건너뛰기
         if not content or len(content) < 5:
             continue
         
+        # 섹션 색상 결정
+        if "TM대상군" in content or "미리 확인" in content:
+            bg_color = section_colors["INFO"]
+        elif "TM 스크립트" in content or "오프닝" in content:
+            bg_color = section_colors["SCRIPT"]
+        elif "비언어적 코칭" in content:
+            bg_color = section_colors["COACHING"]
+        else:
+            bg_color = section_colors["TIP"]
+        
         # === AI 프리미엄 전용 처리 ===
         
-        # 1. --- 구분선 제거
-        content = content.replace('---', '')
+        # 0. 제목들을 h3로 통일
+        # 모든 이모지로 시작하는 줄을 제목(h3)으로 자동 인식
+        # 주요 이모지: 📌💬🎭🎯💡🔍✨⚡📋🎁🏆
         
-        # 2. A그룹/B그룹 색상 처리 (레이블만 빨간색)
+        # 먼저 모든 이모지 제목을 h3로 변환 (### 있든 없든)
+        emoji_pattern = r'(^|\n)(###?\s*)?(📌|💬|🎭|🎯|💡|🔍|✨|⚡|📋|🎁|🏆)\s*([^\n<]+?)(?=\n|<br>|$)'
+        
+        def replace_emoji_header(match):
+            newline = match.group(1) if match.group(1) else ''
+            emoji = match.group(3)
+            text = match.group(4).strip()
+            return f'{newline}<h3>{emoji} {text}</h3>'
+        
+        content = re.sub(emoji_pattern, replace_emoji_header, content)
+        
+        # 특수 처리: "💬 TM 스크립트" 중에서 "1️⃣ 오프닝 (3초 이내)"가 있는 섹션만 "오프닝 추천"으로 변경
+        # h3 태그 안의 텍스트만 변경 (제목 자체는 유지)
+        import re
+        sections = content.split('<h3>💬 TM 스크립트</h3>')
+        
+        if len(sections) > 1:
+            # 첫 번째 섹션은 그대로
+            result = sections[0]
+            
+            for i, section in enumerate(sections[1:], 1):
+                # 다음 h3 태그 전까지가 이 섹션의 내용
+                next_h3_pos = section.find('<h3>')
+                if next_h3_pos != -1:
+                    section_content = section[:next_h3_pos]
+                    remaining = section[next_h3_pos:]
+                else:
+                    section_content = section
+                    remaining = ''
+                
+                # 이 섹션에 "1️⃣ 오프닝 (3초 이내)" 또는 "옵션" 관련 키워드가 있으면
+                if ('1️⃣ 오프닝 (3초 이내)' in section_content or 
+                    'option-label' in section_content):
+                    result += '<h3>💬 오프닝 추천</h3>' + section_content + remaining
+                else:
+                    result += '<h3>💬 TM 스크립트</h3>' + section_content + remaining
+            
+            content = result
+        
+        # 특수 케이스: "미리 확인해야 할 사항" → "TM대상군 분류 및 사전 준비사항" 변경
+        content = content.replace('<h3>📌 미리 확인해야 할 사항</h3>', '<h3>📌 TM대상군 분류 및 사전 준비사항</h3>')
+        
+        
+        # 1. A그룹/B그룹 색상 처리 (레이블만 빨간색)
+        content = re.sub(
+            r'- (A그룹|B그룹)\(([^)]+)\):',
+            r'- <span class="group-label">\1(\2):</span>',
+            content
+        )
         content = re.sub(
             r'- (A그룹|B그룹) \(([^)]+)\):',
             r'- <span class="group-label">\1 (\2):</span>',
             content
         )
         
-        # 3. 오프닝 옵션 색상 처리 (레이블만 빨간색)
+        # 2. 오프닝 옵션 색상 처리 (레이블만 빨간색)
         content = re.sub(
             r'\*\*(옵션 \d+[^:]*?):\*\*',
             r'<span class="option-label">\1:</span>',
             content
         )
         
-        # 4. 헤더 변환
-        content = re.sub(r'####\s*(.+?)(?=<br>|$)', r'<h4>\1</h4>', content)
-        content = re.sub(r'###\s*(.+?)(?=<br>|$)', r'<h3>\1</h3>', content)
-        content = re.sub(r'##\s*(.+?)(?=<br>|$)', r'<h2>\1</h2>', content)
+        # 3. 비언어적 코칭에서 속도, 강조점 등 앞부분만 빨간색
+        # "- 속도:" 형태를 "- <strong>속도</strong>:" 로 변환
+        coaching_prefixes = ["속도", "강조점", "톤", "억양", "중요 포인트", "핵심 전달 사항", "부담 완화", "신뢰감 형성"]
+        for prefix in coaching_prefixes:
+            # "- 속도:" 패턴
+            content = re.sub(
+                rf'- {prefix}:',
+                rf'- <strong>{prefix}</strong>:',
+                content
+            )
         
-        # 5. 나머지 **텍스트** 처리 (강조용)
+        # 3-1. 비언어적 코칭의 모든 "- xxx:" 패턴을 빨간색으로 처리
+        # 🎭 비언어적 코칭 섹션 내에서만 적용
+        # 패턴: "- 긍정 반응:", "- 거절/바쁨:", "- 거절 시(바쁘다):" 등
+        # 일반적인 "- 텍스트:" 패턴을 모두 캐치
+        content = re.sub(
+            r'- ([^:\n]{2,50}?):(?=\s)',
+            r'- <strong>\1</strong>:',
+            content
+        )
+        
+        # 4. 비언어적 코칭 소제목 굵게 (검정색)
+        coaching_subtitles = [
+            "말투 및 억양", "고객 반응 대처법", "심리적 장벽 낮추기"
+        ]
+        for subtitle in coaching_subtitles:
+            if subtitle in content and f"**{subtitle}**" not in content:
+                content = content.replace(subtitle, f'<h4><strong class="coaching-subtitle">{subtitle}</strong></h4>')
+        
+        # 5. 헤더 변환 (h4만, h3는 이미 처리됨)
+        # #### 1️⃣ 형태를 <h4>1️⃣</h4> 로 변환
+        content = re.sub(r'####\s*(.+?)(?=\n|$)', r'<h4>\1</h4>', content, flags=re.MULTILINE)
+        
+        # 6. ### 1️⃣ 형태도 <h4>1️⃣</h4> 로 변환 (번호 앞 ###)
+        content = re.sub(r'###\s*(1️⃣|2️⃣|3️⃣|4️⃣)(.+?)(?=\n|$)', r'<h4>\1\2</h4>', content, flags=re.MULTILINE)
+        
+        # 7. 남은 ### 제거 (헤더가 아닌 일반 ### 기호)
+        content = re.sub(r'###\s*(?!<)', '', content)
+        
+        # 8. 나머지 **텍스트** 처리 (강조용 - 빨간색)
         content = re.sub(r'\*\*([^*]+?)\*\*', r'<strong>\1</strong>', content)
         
-        # 6. 과도한 줄바꿈 정리 (4개 이상 → 2개)
-        content = re.sub(r'(<br>\s*){4,}', '<br><br>', content)
-        content = re.sub(r'\n{3,}', '\n\n', content)
-        
-        # 7. 줄바꿈을 <br>로 변환 (헤더 제외)
-        lines = content.split('\n')
-        processed_lines = []
-        for line in lines:
-            # 이미 HTML 태그가 있는 줄은 그대로
-            if line.strip().startswith('<h') or line.strip().startswith('</h'):
-                processed_lines.append(line)
-            else:
-                processed_lines.append(line)
-        content = '<br>'.join(processed_lines)
+        # 7. 줄바꿈을 <br>로 변환
+        content = content.replace('\n', '<br>')
         
         # 8. 연속된 <br> 정리
         content = re.sub(r'(<br>\s*){3,}', '<br><br>', content)
+        
+        # 9. 헤더 바로 뒤 <br> 제거
+        content = re.sub(r'(</h\d>)(<br>\s*)+', r'\1', content)
         
         # 섹션을 div로 감싸기
         html_body += f"""
@@ -577,6 +706,12 @@ def markdown_to_html_premium(markdown_text):
         
         strong {{
             color: #d9534f;
+            font-weight: 700;
+        }}
+        
+        /* 비언어적 코칭 소제목만 검정색 */
+        .coaching-subtitle {{
+            color: #333;
             font-weight: 700;
         }}
         
@@ -932,6 +1067,9 @@ def generate_tts_subprocess(text, voice_id):
 def show_chat_script_page(model=None, sheets_client=None):
     """AI 스크립트 상담 메인 페이지"""
     
+    # 버튼 색상 CSS 주입
+    inject_button_styles()
+    
     st.markdown("#### 💬 Chat 기반 스크립트 검색 & 생성")
     
     # Google Sheets URL
@@ -967,7 +1105,7 @@ def show_chat_script_page(model=None, sheets_client=None):
         search_cases = st.button(
             "🏆 우수사례 검색 (무료, 즉시)",
             use_container_width=True,
-            type="secondary",
+            type="primary",
             help="통합 데이터베이스에서 우수사례 검색"
         )
         st.caption("⭐ **실제 통화 + JSON 우수사례 + 템플릿 통합 검색**")
@@ -976,7 +1114,7 @@ def show_chat_script_page(model=None, sheets_client=None):
         generate_ai = st.button(
             "✨ AI 프리미엄 (맞춤형)",
             use_container_width=True,
-            type="primary",
+            type="secondary",
             help="Gemini AI가 우수사례를 참고하여 Alice의 4단 구조로 맞춤형 스크립트 생성"
         )
         st.caption("🤖 **Alice의 4단 구조 + 비언어적 코칭**")
@@ -1050,37 +1188,49 @@ def show_chat_script_page(model=None, sheets_client=None):
                             st.markdown(f"**상황:** {result.get('세그먼트', 'N/A')}")
                         
                         st.markdown("---")
-                        st.markdown("**📋 스크립트 (4단 구조)**")
                         
-                        # 기존 스크립트와 코칭 정보 가져오기
-                        script = result.get('추천스크립트', result.get('스크립트', 'N/A'))
-                        coaching = result.get('비언어적코칭', result.get('코칭', ''))
-                        
-                        # 4단 구조로 포맷팅 (무료)
-                        formatted_script = format_script_with_opening_options(script, coaching)
-                        
-                        # 섹션별 색상 구분하여 표시
-                        display_script_with_colors(formatted_script)
-                        
-                        # 버튼 2개 (사용 / HTML 다운로드)
+                        # 다운로드 버튼 2개 (검색 결과 바로 아래)
                         col_btn1, col_btn2 = st.columns(2)
                         
                         with col_btn1:
-                            if st.button(f"✅ 이 스크립트 사용", key=f"use_{idx}"):
-                                st.session_state['generated_script'] = formatted_script
-                                st.session_state['script_data'] = result
-                                st.success("✅ 스크립트가 선택되었습니다!")
-                        
-                        with col_btn2:
                             # HTML 다운로드 (우수사례 전용 함수 사용)
+                            # formatted_script는 아래에서 생성되므로 여기서 미리 생성
+                            script = result.get('추천스크립트', result.get('스크립트', 'N/A'))
+                            coaching = result.get('비언어적코칭', result.get('코칭', ''))
+                            formatted_script = format_script_with_opening_options(script, coaching)
+                            
                             html_content = markdown_to_html_free(formatted_script)
                             st.download_button(
-                                label="📥 HTML 다운로드",
+                                label="📄 HTML 다운로드(PDF 인쇄용)",
                                 data=html_content.encode('utf-8'),
                                 file_name=f"tm_script_{idx}.html",
                                 mime="text/html",
-                                key=f"download_{idx}"
+                                key=f"download_html_{idx}",
+                                use_container_width=True
                             )
+                        
+                        with col_btn2:
+                            # 마크다운 다운로드
+                            st.download_button(
+                                label="📝 마크다운 다운로드",
+                                data=formatted_script,
+                                file_name=f"tm_script_{idx}.md",
+                                mime="text/markdown",
+                                key=f"download_md_{idx}",
+                                use_container_width=True
+                            )
+                        
+                        st.markdown("---")
+                        st.markdown("**📋 스크립트 (4단 구조)**")
+                        
+                        # 섹션별 색상 구분하여 표시 (SCRIPT, COACHING, TIP만 표시)
+                        info_content = display_script_with_colors(formatted_script)
+                        
+                        st.markdown("---")
+                        
+                        # INFO 섹션 표시 (맨 마지막)
+                        if info_content:
+                            display_info_section()
                         
                         st.markdown("---")
                 else:
@@ -1129,67 +1279,86 @@ def show_chat_script_page(model=None, sheets_client=None):
                     st.error(f"❌ 스크립트 생성 중 오류: {str(e)}")
     
     # ============================================================
-    # 4. AI 생성 결과 표시 (UI 개선: 탭 + Expander + 컬러 박스)
+    # 4. AI 생성 결과 표시 (UI 개선: SECTION 태그 제거 + 다운로드 버튼 이동)
     # ============================================================
     if 'generated_script_full' in st.session_state:
         st.markdown("---")
-        st.markdown("## 📋 AI 생성 스크립트")
         
         full_script = st.session_state['generated_script_full']
         
-        # 탭으로 구분 (섹션별 보기 삭제, 전체 보기에 색 구분 추가)
-        tab1, tab2 = st.tabs(["📄 전체 보기", "📥 다운로드"])
+        # 다운로드 버튼 2개 (스크립트 표시 전에 위치)
+        col1, col2 = st.columns(2)
         
-        with tab1:
-            # 전체 스크립트를 섹션별로 색 구분하여 표시
-            sections = full_script.split("---")
+        with col1:
+            # HTML 변환 (AI 프리미엄 전용 함수 사용)
+            html_content = markdown_to_html_premium(full_script)
+            st.download_button(
+                label="📄 HTML 다운로드(PDF 인쇄용)",
+                data=html_content,
+                file_name="tm_script.html",
+                mime="text/html",
+                use_container_width=True
+            )
+        
+        with col2:
+            st.download_button(
+                label="📝 마크다운 다운로드",
+                data=full_script,
+                file_name="tm_script.md",
+                mime="text/markdown",
+                use_container_width=True
+            )
+        
+        st.markdown("---")
+        st.markdown("## 📋 AI 생성 스크립트")
+        
+        # SECTION 태그 완전히 제거
+        import re
+        cleaned_script = re.sub(r'</?SECTION:\w+>', '', full_script)
+        cleaned_script = re.sub(r'SECTION:\w+', '', cleaned_script)
+        cleaned_script = re.sub(r'</>', '', cleaned_script)
+        
+        # 전체 스크립트를 섹션별로 색 구분하여 표시
+        sections = cleaned_script.split("---")
+        
+        for section in sections:
+            section = section.strip()
+            if not section:
+                continue
             
-            for section in sections:
-                section = section.strip()
-                if not section:
-                    continue
-                
-                if "미리 확인해야 할 사항" in section:
-                    st.markdown("### 🔍 미리 확인해야 할 사항")
-                    st.info(section.replace("### 📌 미리 확인해야 할 사항", "").replace("### 미리 확인해야 할 사항", "").strip())
-                
-                elif "TM 스크립트" in section:
+            # "미리 확인해야 할 사항" → "TM대상군 분류 및 사전 준비사항"
+            if "미리 확인해야 할 사항" in section or "TM대상군 분류" in section:
+                st.markdown("### 🔍 TM대상군 분류 및 사전 준비사항")
+                # 제목 제거
+                content = section.replace("### 📌 미리 확인해야 할 사항", "")
+                content = content.replace("### 📌 TM대상군 분류 및 사전 준비사항", "")
+                content = content.replace("📌 미리 확인해야 할 사항", "")
+                content = content.replace("📌 TM대상군 분류 및 사전 준비사항", "")
+                content = content.replace("### 미리 확인해야 할 사항", "")
+                content = content.replace("[TM 대상군 분류 및 사전 준비사항]", "").strip()
+                st.info(content)
+            
+            elif "TM 스크립트" in section:
+                # 첫 번째 TM 스크립트(오프닝 포함)인 경우 "오프닝 추천"으로 표시
+                if "1️⃣ 오프닝" in section:
+                    st.markdown("### 💬 오프닝 추천")
+                else:
                     st.markdown("### 💬 TM 스크립트")
-                    st.success(section.replace("### 💬 TM 스크립트", "").strip())
-                
-                elif "비언어적 코칭" in section:
-                    st.markdown("### 🎭 비언어적 코칭")
-                    st.warning(section.replace("### 🎭 비언어적 코칭", "").strip())
-                
-                elif "종합 Tip" in section or "우수사례 공통 패턴" in section:
-                    st.markdown("### 🎯 종합 Tip")
-                    st.markdown(section)
-        
-        with tab2:
-            # 다운로드 버튼 (마크다운 + HTML)
-            col1, col2 = st.columns(2)
+                # 제목 제거
+                content = section.replace("### 💬 TM 스크립트", "")
+                content = content.replace("💬 TM 스크립트", "").strip()
+                st.success(content)
             
-            with col1:
-                st.download_button(
-                    label="📥 마크다운 다운로드",
-                    data=full_script,
-                    file_name="tm_script.md",
-                    mime="text/markdown",
-                    use_container_width=True
-                )
-                st.caption("💡 메모장이나 마크다운 뷰어로 열기")
+            elif "비언어적 코칭" in section:
+                st.markdown("### 🎭 비언어적 코칭")
+                # 제목 제거
+                content = section.replace("### 🎭 비언어적 코칭", "")
+                content = content.replace("🎭 비언어적 코칭", "").strip()
+                st.warning(content)
             
-            with col2:
-                # HTML 변환 (AI 프리미엄 전용 함수 사용)
-                html_content = markdown_to_html_premium(full_script)
-                st.download_button(
-                    label="📄 HTML 다운로드 (PDF 인쇄용)",
-                    data=html_content,
-                    file_name="tm_script.html",
-                    mime="text/html",
-                    use_container_width=True
-                )
-                st.caption("💡 브라우저에서 열고 Ctrl+P로 PDF 저장")
+            elif "종합 Tip" in section or "우수사례 공통 패턴" in section:
+                st.markdown("### 🎯 종합 Tip")
+                st.markdown(section)
         
         # TTS용 스크립트 추출
         st.session_state['generated_script'] = full_script
