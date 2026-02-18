@@ -110,7 +110,7 @@ def format_script_with_opening_options(script_text, coaching=""):
     # 4단 구조 조립 (섹션별 구분 마커 추가)
     # INFO 섹션을 맨 아래로 이동
     formatted = f"""<SECTION:SCRIPT>
-### 💬 TM 스크립트
+💬 TM 스크립트
 
 #### 1️⃣ 오프닝 (3초 이내) - 아래 옵션 중 선택
 
@@ -132,7 +132,7 @@ def format_script_with_opening_options(script_text, coaching=""):
 ---
 
 <SECTION:COACHING>
-### 🎭 비언어적 코칭
+🎭 비언어적 코칭
 
 {coaching if coaching else '''#### 말투 및 억양
 - 속도: 오프닝은 또박또박, 본론은 자연스럽게
@@ -151,7 +151,7 @@ def format_script_with_opening_options(script_text, coaching=""):
 ---
 
 <SECTION:TIP>
-### 🎯 활용 Tip
+🎯 활용 Tip
 
 - 매장 상황에 맞게 랜드마크를 구체적으로 언급하면 고객 기억 환기에 효과적
 - TM 초보자는 옵션 2로 시작, 익숙해지면 옵션 1 활용 권장
@@ -160,7 +160,7 @@ def format_script_with_opening_options(script_text, coaching=""):
 ---
 
 <SECTION:INFO>
-### 📌 TM대상군 분류 및 사전 준비사항
+📌 TM대상군 분류 및 사전 준비사항
 
 **새학기 초등, 12세 이하 010**
 - A그룹 (12세 이하 가족010 가망군): 28~50세 부모가망 회선 중 자사 자녀회선이 없고, 초등용 키즈App. 월 사용일수 5일 이상
@@ -238,6 +238,11 @@ def display_script_with_colors(script_text):
             bg_color = section_colors.get(section_name, "#ffffff")
             content = section_contents[section_name]
             
+            # 섹션 제목을 h3 태그로 감싸기
+            import re
+            # 이모지 제목 찾기 (💬, 🎭, 🎯 등)
+            content = re.sub(r'^(💬|🎭|🎯|📌)\s*([^\n<]+)', r'<h3>\1 \2</h3>', content.strip())
+            
             st.markdown(
                 f'<div style="background-color: {bg_color}; padding: 20px; border-radius: 8px; border-left: 4px solid #1f77b4; margin: 10px 0;">{content}</div>',
                 unsafe_allow_html=True
@@ -250,7 +255,7 @@ def display_info_section():
     """
     TM대상군 분류 및 사전 준비사항 섹션 표시
     """
-    st.markdown("### 📌 TM대상군 분류 및 사전 준비사항")
+    st.markdown("📌 TM대상군 분류 및 사전 준비사항")
     
     # 캠페인별 데이터
     campaigns = {
@@ -546,8 +551,8 @@ def markdown_to_html_premium(markdown_text):
                     remaining = ''
                 
                 # 이 섹션에 "1️⃣ 오프닝 (3초 이내)" 또는 "옵션" 관련 키워드가 있으면
-                if ('1️⃣ 오프닝 (3초 이내)' in section_content or 
-                    'option-label' in section_content):
+                if ('1️⃣ 오프닝 (3초 이내)' in section_content and 
+                    ('옵션 1' in section_content or 'option-label' in section_content)):
                     result += '<h3>💬 오프닝 추천</h3>' + section_content + remaining
                 else:
                     result += '<h3>💬 TM 스크립트</h3>' + section_content + remaining
@@ -856,6 +861,9 @@ def markdown_to_html_free(markdown_text):
         )
         
         # 6. 헤더 변환
+        # 먼저 이모지 제목을 h3로 변환 (💬, 🎭, 🎯, 📌)
+        content = re.sub(r'(💬|🎭|🎯|📌)\s*([^\n<]+?)(?=\n|$)', r'<h3>\1 \2</h3>', content, flags=re.MULTILINE)
+        
         content = re.sub(r'####\s*(.+?)(?=\n|$)', r'<h4>\1</h4>', content)
         content = re.sub(r'###\s*(.+?)(?=\n|$)', r'<h3>\1</h3>', content)
         content = re.sub(r'##\s*(.+?)(?=\n|$)', r'<h2>\1</h2>', content)
@@ -1061,6 +1069,58 @@ def generate_tts_subprocess(text, voice_id):
         return None
 
 # ============================================================
+# Google Sheets 저장 함수
+# ============================================================
+
+def save_script_to_history(sheets_client, tcrew_info, user_request, script_type, keyword=""):
+    """
+    스크립트 생성 이력을 Google Sheets에 저장
+    
+    Args:
+        sheets_client: Google Sheets 클라이언트
+        tcrew_info (dict): T크루 정보 (T크루ID, 이름, 마케팅팀명, 대리점코드, 대리점명, 매장코드, 매장명)
+        user_request (str): 사용자 요청 내용
+        script_type (str): 스크립트 타입 ("AI프리미엄" or "우수사례")
+        keyword (str): 키워드 (선택)
+    
+    Returns:
+        bool: 저장 성공 여부
+    """
+    try:
+        # 시트 열기
+        sheet_url = st.secrets["google"]["sheet_url"]
+        spreadsheet = sheets_client.open_by_url(sheet_url)
+        
+        # "스크립트생성이력" 시트 선택
+        worksheet = spreadsheet.worksheet("스크립트생성이력")
+        
+        # 저장할 데이터 행 생성
+        from datetime import datetime
+        new_row = [
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # 분석일자
+            tcrew_info.get('T크루ID', ''),                 # T크루ID
+            tcrew_info.get('이름', ''),                     # 이름
+            tcrew_info.get('마케팅팀명', ''),              # 마케팅팀명
+            tcrew_info.get('대리점코드', ''),              # 대리점코드
+            tcrew_info.get('대리점명', ''),                # 대리점명
+            str(tcrew_info.get('매장코드', '')).zfill(4) if tcrew_info.get('매장코드', '') else '',  # 매장코드 (문자열 4자리)
+            tcrew_info.get('매장명', ''),                  # 매장명
+            user_request,                                   # 요청내용
+            script_type,                                    # 스크립트 타입
+            keyword                                         # 키워드
+        ]
+        
+        # 시트에 행 추가
+        worksheet.append_row(new_row, value_input_option='RAW')
+        
+        return True
+        
+    except Exception as e:
+        st.error(f"⚠️ 저장 중 오류: {str(e)}")
+        return False
+
+
+# ============================================================
 # 메인 UI 함수
 # ============================================================
 
@@ -1070,6 +1130,119 @@ def show_chat_script_page(model=None, sheets_client=None):
     # 버튼 색상 CSS 주입
     inject_button_styles()
     
+    # ============================================================
+    # T크루 정보 입력 (통화분석 화면과 동일)
+    # ============================================================
+    st.markdown("### 👤 T크루 정보")
+    
+    # T크루 마스터 로드 (캐싱 적용)
+    @st.cache_data(ttl=86400)  # 24시간 캐시
+    def load_tcrew_master_for_chat():
+        """NPS Raw Data에서 T크루 마스터 로드"""
+        try:
+            from google.oauth2.service_account import Credentials
+            import gspread
+            
+            # Google Sheets 클라이언트 설정
+            service_account_info = dict(st.secrets["gcp_service_account"])
+            credentials = Credentials.from_service_account_info(
+                service_account_info,
+                scopes=['https://www.googleapis.com/auth/spreadsheets', 
+                       'https://www.googleapis.com/auth/drive']
+            )
+            client = gspread.authorize(credentials)
+            
+            # NPS Raw Data 시트 열기
+            nps_sheet_url = st.secrets["google"]["nps_raw_sheet_url"]
+            spreadsheet = client.open_by_url(nps_sheet_url)
+            worksheet = spreadsheet.worksheet("세부")
+            
+            # 전체 데이터 로드
+            data = worksheet.get_all_records()
+            
+            # T크루 정보 추출 (중복 제거)
+            tcrew_dict = {}
+            for row in data:
+                tcrew_id = row.get('담당자ID', '')
+                if tcrew_id and tcrew_id not in tcrew_dict:
+                    tcrew_dict[tcrew_id] = {
+                        'T크루ID': row.get('담당자ID', ''),
+                        '이름': row.get('담당자', ''),
+                        '마케팅팀명': row.get('마케팅팀명', ''),
+                        '대리점코드': row.get('대리점', ''),
+                        '대리점명': row.get('대리점명', ''),
+                        '매장코드': row.get('매장', ''),
+                        '매장명': row.get('매장명', '')
+                    }
+            
+            return list(tcrew_dict.values())
+        except Exception as e:
+            return []
+    
+    tcrew_list = load_tcrew_master_for_chat()
+    
+    if tcrew_list:
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            search_term = st.text_input(
+                "🔍 T크루 검색",
+                placeholder="이름 또는 ID입력",
+                help="T크루 이름 또는 ID 일부만 입력하세요",
+                key="tcrew_search_chat"
+            )
+        
+        if search_term:
+            # 검색어로 필터링
+            filtered = [
+                t for t in tcrew_list 
+                if search_term.upper() in t['T크루ID'].upper() 
+                or search_term in t['이름']
+            ]
+            
+            if filtered:
+                # 드롭다운 옵션
+                options = [
+                    f"{t['이름']} ({t['T크루ID']}) - {t['매장명']}"
+                    for t in filtered
+                ]
+                
+                selected_option = st.selectbox(
+                    "📋 매칭 결과",
+                    options,
+                    key="tcrew_select_chat"
+                )
+                
+                # 선택된 정보
+                selected_index = options.index(selected_option)
+                selected_tcrew = filtered[selected_index]
+                
+                # 정보 확인
+                with st.expander("✅ 선택된 T크루 정보", expanded=True):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write(f"**이름:** {selected_tcrew['이름']}")
+                        st.write(f"**T크루ID:** {selected_tcrew['T크루ID']}")
+                        st.write(f"**팀:** {selected_tcrew['마케팅팀명']}")
+                    with col2:
+                        st.write(f"**대리점:** {selected_tcrew['대리점명']}")
+                        st.write(f"**매장:** {selected_tcrew['매장명']}")
+                
+                # Session state에 저장
+                st.session_state['selected_tcrew_chat'] = selected_tcrew
+            
+            else:
+                st.warning("🔍 검색 결과가 없습니다. 다른 키워드로 시도해보세요.")
+        else:
+            st.info("👆 T크루 이름 또는 ID를 입력하세요")
+    else:
+        st.warning("⚠️ T크루 데이터를 불러올 수 없습니다.")
+    
+    st.markdown("---")
+    
+    # ============================================================
+    # Chat 기반 스크립트 검색 & 생성
+    # ============================================================
     st.markdown("#### 💬 Chat 기반 스크립트 검색 & 생성")
     
     # Google Sheets URL
@@ -1083,7 +1256,6 @@ def show_chat_script_page(model=None, sheets_client=None):
         stats = db.get_data_statistics(all_data)
         st.caption(f"📊 활용 가능한 데이터: Google Sheets {stats['google_sheets_count']}개 + JSON 우수사례 {stats['json_excellent_count']}개 + 템플릿 {stats['json_template_count']}개")
     except Exception as e:
-        st.error(f"⚠️ 데이터 로드 중 오류: {str(e)}")
         all_data = None
     
     # ============================================================
@@ -1118,9 +1290,28 @@ def show_chat_script_page(model=None, sheets_client=None):
             help="Gemini AI가 우수사례를 참고하여 Alice의 4단 구조로 맞춤형 스크립트 생성"
         )
         st.caption("🤖 **Alice의 4단 구조 + 비언어적 코칭**")
-    
+
+    # T크루 정보 검증
+    if search_cases or generate_ai:
+        tcrew_info = st.session_state.get('selected_tcrew_chat', None)
+        if not tcrew_info or tcrew_info.get('T크루ID', '') in ['', '미선택']:
+            st.warning("⚠️ T크루 정보를 먼저 선택해주세요!")
+            st.stop()
+
     # 안내 메시지
     st.info("💡 **우수사례 검색**: 통합 DB에서 키워드 매칭 (무료, 최대 5개)\n✨ **AI 프리미엄**: Gemini가 Alice의 4단 구조로 맞춤 생성 (~₩0.5/회)")
+    
+    # ============================================================
+    # 자동 저장 설정 토글
+    # ============================================================
+    with st.expander("⚙️ 설정 (고급)"):
+        auto_save = st.toggle(
+            "📝 자동 저장", 
+            value=True, 
+            key="auto_save_chat",
+            help="스크립트 생성 시 자동으로 Google Sheets에 이력을 저장합니다."
+        )
+        st.caption("💡 스크립트 생성 시 자동으로 '스크립트생성이력' 시트에 저장됩니다.")
     
     # ============================================================
     # 3-A. 우수사례 검색 (무료) - 디버그 정보 추가
@@ -1160,6 +1351,20 @@ def show_chat_script_page(model=None, sheets_client=None):
                 
                 if results:
                     st.success(f"✅ {len(results)}개의 결과를 찾았습니다!")
+                    
+                    # 우수사례 검색 이력 저장 (자동 저장 ON일 때)
+                    if st.session_state.get('auto_save_chat', True):
+                        if 'selected_tcrew_chat' in st.session_state and sheets_client:
+                            tcrew_info = st.session_state['selected_tcrew_chat']
+                            save_result = save_script_to_history(
+                                sheets_client=sheets_client,
+                                tcrew_info=tcrew_info,
+                                user_request=user_request,
+                                script_type="우수사례",
+                                keyword=user_request[:50]  # 처음 50자만 키워드로
+                            )
+                            if save_result:
+                                st.toast("✅ 우수사례 검색 이력이 저장되었습니다!")
                     
                     # 디버그 4: 첫 번째 결과 미리보기
                     with st.expander("🔍 [디버그] 첫 번째 검색 결과 미리보기"):
@@ -1250,7 +1455,10 @@ def show_chat_script_page(model=None, sheets_client=None):
     # 3-B. AI 프리미엄 생성 (유료) - UI 개선
     # ============================================================
     if generate_ai and user_request:
-        if not model:
+        # T크루 정보 필수 검증
+        if 'selected_tcrew_chat' not in st.session_state:
+            st.error("⚠️ T크루 정보를 먼저 선택해주세요.")
+        elif not model:
             st.error("⚠️ Gemini API 연결이 필요합니다.")
         else:
             with st.spinner("🤖 Gemini AI가 Alice의 4단 구조로 맞춤형 스크립트를 생성하는 중... (5-10초 소요)"):
@@ -1273,6 +1481,21 @@ def show_chat_script_page(model=None, sheets_client=None):
                     if script_markdown:
                         st.session_state['generated_script_full'] = script_markdown
                         st.success("✅ AI 맞춤형 스크립트 생성 완료!")
+                        
+                        # 자동 저장 (토글이 ON일 때)
+                        if st.session_state.get('auto_save_chat', True):
+                            if 'selected_tcrew_chat' in st.session_state and sheets_client:
+                                tcrew_info = st.session_state['selected_tcrew_chat']
+                                save_result = save_script_to_history(
+                                    sheets_client=sheets_client,
+                                    tcrew_info=tcrew_info,
+                                    user_request=user_request,
+                                    script_type="AI프리미엄",
+                                    keyword=user_request[:50]  # 처음 50자만 키워드로
+                                )
+                                if save_result:
+                                    st.toast("✅ 스크립트 이력이 저장되었습니다!")
+                        
                         st.rerun()
                         
                 except Exception as e:
@@ -1328,7 +1551,6 @@ def show_chat_script_page(model=None, sheets_client=None):
             
             # "미리 확인해야 할 사항" → "TM대상군 분류 및 사전 준비사항"
             if "미리 확인해야 할 사항" in section or "TM대상군 분류" in section:
-                st.markdown("### 🔍 TM대상군 분류 및 사전 준비사항")
                 # 제목 제거
                 content = section.replace("### 📌 미리 확인해야 할 사항", "")
                 content = content.replace("### 📌 TM대상군 분류 및 사전 준비사항", "")
@@ -1336,28 +1558,27 @@ def show_chat_script_page(model=None, sheets_client=None):
                 content = content.replace("📌 TM대상군 분류 및 사전 준비사항", "")
                 content = content.replace("### 미리 확인해야 할 사항", "")
                 content = content.replace("[TM 대상군 분류 및 사전 준비사항]", "").strip()
-                st.info(content)
+                st.info("### 📌 TM대상군 분류 및 사전 준비사항\n\n" + content)
             
             elif "TM 스크립트" in section:
-                # 첫 번째 TM 스크립트(오프닝 포함)인 경우 "오프닝 추천"으로 표시
-                if "1️⃣ 오프닝" in section:
-                    st.markdown("### 💬 오프닝 추천")
-                else:
-                    st.markdown("### 💬 TM 스크립트")
                 # 제목 제거
                 content = section.replace("### 💬 TM 스크립트", "")
                 content = content.replace("💬 TM 스크립트", "").strip()
-                st.success(content)
+                # 첫 번째 TM 스크립트(오프닝 포함)인 경우 "오프닝 추천"으로 표시
+                if "1️⃣ 오프닝" in section and "옵션 1" in section:
+                    st.success("### 💬 오프닝 추천\n\n" + content)
+                else:
+                    st.success("### 💬 TM 스크립트\n\n" + content)
             
             elif "비언어적 코칭" in section:
-                st.markdown("### 🎭 비언어적 코칭")
                 # 제목 제거
                 content = section.replace("### 🎭 비언어적 코칭", "")
                 content = content.replace("🎭 비언어적 코칭", "").strip()
-                st.warning(content)
+                # 제목을 박스 안으로 이동
+                st.warning("### 🎭 비언어적 코칭\n\n" + content)
             
             elif "종합 Tip" in section or "우수사례 공통 패턴" in section:
-                st.markdown("### 🎯 종합 Tip")
+                st.markdown("🎯 종합 Tip")
                 st.markdown(section)
         
         # TTS용 스크립트 추출

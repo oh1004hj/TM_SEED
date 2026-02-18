@@ -137,10 +137,13 @@ def generate_script(model=None, cases=None, user_request="", current_result=None
 
 """
         
-        # AI 결과에서 "### 💬 TM 스크립트" 찾아서 오프닝 삽입
+        # AI 결과에서 "### 💬 TM 스크립트" 찾아서 오프닝과 함께 재조립
         if "### 💬 TM 스크립트" in ai_result:
+            # AI가 생성한 "### 💬 TM 스크립트"를 기준으로 분리
             parts = ai_result.split("### 💬 TM 스크립트", 1)
-            final_result = parts[0] + fixed_opening + parts[1]
+            
+            # 재조립: 앞부분 + 오프닝 + "### 💬 TM 스크립트" + 뒷부분(AI 생성 내용)
+            final_result = parts[0] + fixed_opening + "### 💬 TM 스크립트\n\n" + parts[1]
         else:
             # 못 찾으면 미리 확인사항 뒤에 오프닝 삽입
             if "---" in ai_result:

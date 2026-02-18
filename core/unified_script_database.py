@@ -87,7 +87,7 @@ def load_google_sheets_cases(sheets_client, sheet_url):
     """
     try:
         spreadsheet = sheets_client.open_by_url(sheet_url)
-        worksheet = spreadsheet.worksheet("시트1")
+        worksheet = spreadsheet.worksheet("분석결과")
         all_data = worksheet.get_all_records()
         
         if not all_data:
