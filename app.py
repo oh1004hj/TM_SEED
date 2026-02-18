@@ -2,7 +2,10 @@ import streamlit as st
 import google.generativeai as genai
 from google.oauth2.service_account import Credentials
 import gspread
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+# 한국 시간(KST) 설정
+KST = timezone(timedelta(hours=9))
 import json
 import os
 import tempfile
@@ -996,7 +999,7 @@ def save_script_history_for_analysis(sheets_client, tcrew_info, analysis_result)
         
         # 저장할 데이터 행 생성
         new_row = [
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # 분석일자
+            datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),  # 분석일자
             tcrew_info.get('T크루ID', ''),                 # T크루ID
             tcrew_info.get('이름', ''),                     # 이름
             tcrew_info.get('마케팅팀명', ''),              # 마케팅팀명

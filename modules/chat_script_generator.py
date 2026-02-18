@@ -1095,9 +1095,12 @@ def save_script_to_history(sheets_client, tcrew_info, user_request, script_type,
         worksheet = spreadsheet.worksheet("스크립트생성이력")
         
         # 저장할 데이터 행 생성
-        from datetime import datetime
+        from datetime import datetime, timezone, timedelta
+
+        # 한국 시간(KST) 설정
+        KST = timezone(timedelta(hours=9))
         new_row = [
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # 분석일자
+            datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),  # 분석일자
             tcrew_info.get('T크루ID', ''),                 # T크루ID
             tcrew_info.get('이름', ''),                     # 이름
             tcrew_info.get('마케팅팀명', ''),              # 마케팅팀명
