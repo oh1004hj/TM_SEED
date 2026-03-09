@@ -1,5 +1,6 @@
 streamlit==1.31.0
 google-generativeai==0.3.2
+google-genai
 gspread==5.12.0
 google-auth==2.26.2
 google-auth-oauthlib==1.2.0
