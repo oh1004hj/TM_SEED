@@ -122,14 +122,10 @@ def format_script_with_opening_options(script_text, coaching=""):
 
 {opening_examples}
 
----
-
 #### 2️⃣~4️⃣ 스크립트 내용
 
 {script_text}
 </SECTION:SCRIPT>
-
----
 
 <SECTION:COACHING>
 🎭 비언어적 코칭
@@ -148,16 +144,12 @@ def format_script_with_opening_options(script_text, coaching=""):
 - 부담 없이 정보 제공 위주로 접근'''}
 </SECTION:COACHING>
 
----
-
 <SECTION:TIP>
 🎯 활용 Tip
 
 - 매장 상황에 맞게 랜드마크를 구체적으로 언급하면 고객 기억 환기에 효과적
 - TM 초보자는 옵션 2로 시작, 익숙해지면 옵션 1 활용 권장
 </SECTION:TIP>
-
----
 
 <SECTION:INFO>
 📌 TM대상군 분류 및 사전 준비사항
@@ -194,61 +186,84 @@ def format_script_with_opening_options(script_text, coaching=""):
 def display_script_with_colors(script_text):
     """
     스크립트를 섹션별 색상으로 구분하여 Streamlit에 표시
-    SCRIPT → COACHING → TIP 순서로 먼저 표시하고, INFO는 마지막에 표시
-    
-    Args:
-        script_text: 섹션 마커가 포함된 스크립트
-    
-    Returns:
-        info_section: INFO 섹션 내용 (별도로 표시하기 위해)
+    markdown_to_html_free와 동일한 변환 로직 사용 (웹=HTML 일치)
     """
     import re
     
-    # 섹션별 색상 정의
     section_colors = {
         "INFO": "#d1ecf1",
         "SCRIPT": "#d4edda",
+        "OPENING": "#d4edda",
         "COACHING": "#fff3cd",
         "TIP": "#f8f9fa"
     }
     
-    # 섹션별로 분리
     sections = re.split(r'<SECTION:(\w+)>|</SECTION:\w+>', script_text)
     
-    # 섹션 내용 저장
     section_contents = {}
     current_section = None
     
     for part in sections:
-        if not part or part.strip() == "---":
+        if not part or not part.strip() or part.strip() == "---":
             continue
-        
-        # 섹션 태그 감지
         if part in section_colors:
             current_section = part
             continue
-        
-        # 내용 저장
         if current_section:
             section_contents[current_section] = part
     
-    # 1. SCRIPT, COACHING, TIP 먼저 표시
-    for section_name in ["SCRIPT", "COACHING", "TIP"]:
-        if section_name in section_contents:
-            bg_color = section_colors.get(section_name, "#ffffff")
-            content = section_contents[section_name]
-            
-            # 섹션 제목을 h3 태그로 감싸기
-            import re
-            # 이모지 제목 찾기 (💬, 🎭, 🎯 등)
-            content = re.sub(r'^(💬|🎭|🎯|📌)\s*([^\n<]+)', r'<h3>\1 \2</h3>', content.strip())
-            
-            st.markdown(
-                f'<div style="background-color: {bg_color}; padding: 20px; border-radius: 8px; border-left: 4px solid #1f77b4; margin: 10px 0;">{content}</div>',
-                unsafe_allow_html=True
-            )
+    info_content = None
     
-    # 2. INFO 섹션 반환 (나중에 다운로드 버튼 후 표시)
+    for section_name in ["OPENING", "SCRIPT", "COACHING", "TIP"]:
+        if section_name not in section_contents:
+            continue
+        
+        bg_color = section_colors[section_name]
+        content = section_contents[section_name].strip()
+        
+        # --- 제거
+        content = content.replace('---', '')
+        
+        # SCRIPT 섹션에 "💬 TM 스크립트" 제목이 없으면 맨 앞에 추가
+        if section_name == "SCRIPT":
+            if '💬 TM 스크립트' not in content and '💬 오프닝 추천' not in content:
+                content = '💬 TM 스크립트\n\n' + content
+        # OPENING 섹션에 "💬 오프닝 추천" 제목이 없으면 맨 앞에 추가
+        elif section_name == "OPENING":
+            if '💬 오프닝 추천' not in content:
+                content = '💬 오프닝 추천\n\n' + content
+        
+        # A그룹/B그룹 레이블
+        content = re.sub(r'- (A그룹|B그룹) \(([^)]+)\):', r'- <span style="color:#d9534f;font-weight:700">\1 (\2):</span>', content)
+        content = re.sub(r'(A그룹|B그룹)\(([^)]+)\):', r'<span style="color:#d9534f;font-weight:700">\1(\2):</span>', content)
+        
+        # 옵션 레이블
+        content = re.sub(r'\*\*(옵션 \d+[^:]*?):\*\*', r'<span style="color:#d9534f;font-weight:700">\1:</span>', content)
+        content = re.sub(r'\*\*(사용 예시):\*\*', r'<span style="color:#d9534f;font-weight:700">\1:</span>', content)
+        
+        # 이모지+### 헤더 → h3 (### 포함하여 소비)
+        content = re.sub(r'#{0,4}\s*(💬|🎭|🎯|📌)\s*([^\n<]+?)(?=\n|$)', r'<h3>\1 \2</h3>', content, flags=re.MULTILINE)
+        
+        # #### → h4, ### → h3
+        content = re.sub(r'####\s*(.+?)(?=\n|$)', r'<h4>\1</h4>', content)
+        content = re.sub(r'###\s*(.+?)(?=\n|$)', r'<h3>\1</h3>', content)
+        
+        # 연속 중복 h3 제거 (💬 TM 스크립트 2번 방지)
+        content = re.sub(r'(<h3>💬 TM 스크립트</h3>)\s*(<h3>💬 TM 스크립트</h3>)', r'\2', content)
+        
+        # **텍스트** → <strong>
+        content = re.sub(r'\*\*([^*]+?)\*\*', r'<strong>\1</strong>', content)
+        
+        # 줄바꿈 → <br>
+        content = content.replace('\n', '<br>')
+        content = re.sub(r'(</h\d>)(<br>)+', r'\1', content)
+        content = re.sub(r'(<br>){3,}', '<br><br>', content)
+        
+        st.markdown(
+            f'''<div style="background-color:{bg_color};padding:20px;border-radius:8px;border-left:4px solid #1f77b4;margin:10px 0;">{content}</div>''',
+            unsafe_allow_html=True
+        )
+    
     return section_contents.get("INFO", None)
 
 def display_info_section():
@@ -309,6 +324,7 @@ def markdown_to_html(markdown_text):
     section_colors = {
         "INFO": "#d1ecf1",      # 파란색 - 미리 확인
         "SCRIPT": "#d4edda",    # 초록색 - TM 스크립트
+        "OPENING": "#d4edda",   # 초록색 - 오프닝 추천
         "COACHING": "#fff3cd",  # 노란색 - 비언어적 코칭
         "TIP": "#f8f9fa"        # 회색 - 활용 Tip
     }
@@ -487,6 +503,7 @@ def markdown_to_html_premium(markdown_text):
     section_colors = {
         "INFO": "#d1ecf1",      # 파란색 - TM대상군
         "SCRIPT": "#d4edda",    # 초록색 - TM 스크립트
+        "OPENING": "#d4edda",   # 초록색 - 오프닝 추천
         "COACHING": "#fff3cd",  # 노란색 - 비언어적 코칭
         "TIP": "#f8f9fa"        # 회색 - 활용 Tip
     }
@@ -533,31 +550,9 @@ def markdown_to_html_premium(markdown_text):
         
         # 특수 처리: "💬 TM 스크립트" 중에서 "1️⃣ 오프닝 (3초 이내)"가 있는 섹션만 "오프닝 추천"으로 변경
         # h3 태그 안의 텍스트만 변경 (제목 자체는 유지)
-        import re
-        sections = content.split('<h3>💬 TM 스크립트</h3>')
-        
-        if len(sections) > 1:
-            # 첫 번째 섹션은 그대로
-            result = sections[0]
-            
-            for i, section in enumerate(sections[1:], 1):
-                # 다음 h3 태그 전까지가 이 섹션의 내용
-                next_h3_pos = section.find('<h3>')
-                if next_h3_pos != -1:
-                    section_content = section[:next_h3_pos]
-                    remaining = section[next_h3_pos:]
-                else:
-                    section_content = section
-                    remaining = ''
-                
-                # 이 섹션에 "1️⃣ 오프닝 (3초 이내)" 또는 "옵션" 관련 키워드가 있으면
-                if ('1️⃣ 오프닝 (3초 이내)' in section_content and 
-                    ('옵션 1' in section_content or 'option-label' in section_content)):
-                    result += '<h3>💬 오프닝 추천</h3>' + section_content + remaining
-                else:
-                    result += '<h3>💬 TM 스크립트</h3>' + section_content + remaining
-            
-            content = result
+        # 연속된 중복 "TM 스크립트" h3 제거 (emoji_pattern 변환 후 split 재조립 불필요)
+        import re as _re2
+        content = _re2.sub(r'(<h3>💬 TM 스크립트</h3>)\s*(<h3>💬 TM 스크립트</h3>)', r'\2', content)
         
         # 특수 케이스: "미리 확인해야 할 사항" → "TM대상군 분류 및 사전 준비사항" 변경
         content = content.replace('<h3>📌 미리 확인해야 할 사항</h3>', '<h3>📌 TM대상군 분류 및 사전 준비사항</h3>')
@@ -787,6 +782,7 @@ def markdown_to_html_free(markdown_text):
     section_colors = {
         "INFO": "#d1ecf1",      # 파란색 - 미리 확인
         "SCRIPT": "#d4edda",    # 초록색 - TM 스크립트
+        "OPENING": "#d4edda",   # 초록색 - 오프닝 추천
         "COACHING": "#fff3cd",  # 노란색 - 비언어적 코칭
         "TIP": "#f8f9fa"        # 회색 - 활용 Tip
     }
@@ -862,7 +858,7 @@ def markdown_to_html_free(markdown_text):
         
         # 6. 헤더 변환
         # 먼저 이모지 제목을 h3로 변환 (💬, 🎭, 🎯, 📌)
-        content = re.sub(r'(💬|🎭|🎯|📌)\s*([^\n<]+?)(?=\n|$)', r'<h3>\1 \2</h3>', content, flags=re.MULTILINE)
+        content = re.sub(r'#{0,4}\s*(💬|🎭|🎯|📌)\s*([^\n<]+?)(?=\n|$)', r'<h3>\1 \2</h3>', content, flags=re.MULTILINE)
         
         content = re.sub(r'####\s*(.+?)(?=\n|$)', r'<h4>\1</h4>', content)
         content = re.sub(r'###\s*(.+?)(?=\n|$)', r'<h3>\1</h3>', content)
@@ -1100,13 +1096,13 @@ def save_script_to_history(sheets_client, tcrew_info, user_request, script_type,
         # 한국 시간(KST) 설정
         KST = timezone(timedelta(hours=9))
         new_row = [
-            datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),  # 분석일자
+            datetime.now(KST).strftime("%Y-%m-%d"),  # 생성일자
             tcrew_info.get('T크루ID', ''),                 # T크루ID
             tcrew_info.get('이름', ''),                     # 이름
             tcrew_info.get('마케팅팀명', ''),              # 마케팅팀명
             tcrew_info.get('대리점코드', ''),              # 대리점코드
             tcrew_info.get('대리점명', ''),                # 대리점명
-            str(tcrew_info.get('매장코드', '')).zfill(4) if tcrew_info.get('매장코드', '') else '',  # 매장코드 (문자열 4자리)
+            str(tcrew_info.get('매장코드', '')).zfill(4) if str(tcrew_info.get('매장코드', '')) != '' else '',  # 매장코드 (문자열 4자리)
             tcrew_info.get('매장명', ''),                  # 매장명
             user_request,                                   # 요청내용
             script_type,                                    # 스크립트 타입
@@ -1127,7 +1123,7 @@ def save_script_to_history(sheets_client, tcrew_info, user_request, script_type,
 # 메인 UI 함수
 # ============================================================
 
-def show_chat_script_page(model=None, sheets_client=None):
+def show_chat_script_page(model=None, sheets_client=None, device_info=""):
     """AI 스크립트 상담 메인 페이지"""
     
     # 버튼 색상 CSS 주입
@@ -1174,7 +1170,7 @@ def show_chat_script_page(model=None, sheets_client=None):
                         '마케팅팀명': row.get('마케팅팀명', ''),
                         '대리점코드': row.get('대리점', ''),
                         '대리점명': row.get('대리점명', ''),
-                        '매장코드': row.get('매장', ''),
+                        '매장코드': str(row.get('매장', '')).zfill(4) if str(row.get('매장', '')) != '' else '',
                         '매장명': row.get('매장명', '')
                     }
             
@@ -1372,6 +1368,10 @@ def show_chat_script_page(model=None, sheets_client=None):
                     # 디버그 4: 첫 번째 결과 미리보기
                     with st.expander("🔍 [디버그] 첫 번째 검색 결과 미리보기"):
                         st.json(results[0])
+                        st.write("🔑 키 목록:", list(results[0].keys()))
+                        st.write("상세JSON 있음:", '상세JSON' in results[0])
+                        if '상세JSON' in results[0]:
+                            st.write("상세JSON 내용:", results[0]['상세JSON'][:200])
                     
                     st.markdown("---")
                     st.markdown("##### 📋 검색 결과")
@@ -1403,8 +1403,21 @@ def show_chat_script_page(model=None, sheets_client=None):
                         with col_btn1:
                             # HTML 다운로드 (우수사례 전용 함수 사용)
                             # formatted_script는 아래에서 생성되므로 여기서 미리 생성
-                            script = result.get('추천스크립트', result.get('스크립트', 'N/A'))
-                            coaching = result.get('비언어적코칭', result.get('코칭', ''))
+                            # 최상위 키 우선, 없으면 상세JSON 파싱
+                            script = result.get('추천스크립트') or result.get('스크립트', '')
+                            coaching = result.get('비언어적코칭') or result.get('억양가이드') or result.get('코칭', '')
+                            if not script:
+                                import json
+                                raw_json = result.get('상세JSON', '')
+                                if raw_json:
+                                    try:
+                                        detail = json.loads(raw_json) if isinstance(raw_json, str) else raw_json
+                                        script = detail.get('추천스크립트', '')
+                                        coaching = coaching or detail.get('억양가이드', '') or detail.get('코칭조언', '')
+                                    except:
+                                        pass
+                            if not script:
+                                script = 'N/A'
                             formatted_script = format_script_with_opening_options(script, coaching)
                             
                             html_content = markdown_to_html_free(formatted_script)
@@ -1478,7 +1491,8 @@ def show_chat_script_page(model=None, sheets_client=None):
                     script_markdown = generator.generate_script(
                         model=model,
                         cases=cases,
-                        user_request=user_request
+                        user_request=user_request,
+                        device_info=device_info
                     )
                     
                     if script_markdown:
@@ -1538,51 +1552,33 @@ def show_chat_script_page(model=None, sheets_client=None):
         st.markdown("---")
         st.markdown("## 📋 AI 생성 스크립트")
         
-        # SECTION 태그 완전히 제거
-        import re
-        cleaned_script = re.sub(r'</?SECTION:\w+>', '', full_script)
-        cleaned_script = re.sub(r'SECTION:\w+', '', cleaned_script)
-        cleaned_script = re.sub(r'</>', '', cleaned_script)
+        # 섹션별 색상 구분하여 표시 (SECTION 마커 기반)
+        # INFO 섹션 먼저 추출하여 맨 위에 표시
+        import re as _re
         
-        # 전체 스크립트를 섹션별로 색 구분하여 표시
-        sections = cleaned_script.split("---")
+        # full_script에서 INFO 섹션 직접 추출 (display 호출 전)
+        info_match = _re.search(r'<SECTION:INFO>(.*?)</SECTION:INFO>', full_script, _re.DOTALL)
+        if info_match:
+            info_text = info_match.group(1).strip()
+            # ### 헤더 줄 제거 (📌 포함 줄)
+            info_text = _re.sub(r'#{0,4}\s*📌[^\n]*\n?', '', info_text).strip()
+            # "[TM 대상군 분류 및 사전 준비사항]" 텍스트 제거
+            info_text = info_text.replace('[TM 대상군 분류 및 사전 준비사항]', '').strip()
+            # **텍스트** → <strong>
+            info_text = _re.sub(r'\*\*([^*]+?)\*\*', r'<strong>\1</strong>', info_text)
+            # 맨 앞/뒤 "---" 제거
+            info_text = _re.sub(r'^-{2,}\s*', '', info_text).strip()
+            info_text = _re.sub(r'\s*-{2,}\s*$', '', info_text).strip()
+            # 줄바꿈 → <br>
+            info_html = info_text.replace('\n', '<br>')
+            info_html = _re.sub(r'(<br>){3,}', '<br><br>', info_html)
+            st.markdown(
+                '<div style="background-color:#d1ecf1;padding:20px;border-radius:8px;border-left:4px solid #1f77b4;margin:10px 0;"><h3>📌 TM대상군 분류 및 사전 준비사항</h3>' + info_html + '</div>',
+                unsafe_allow_html=True
+            )
         
-        for section in sections:
-            section = section.strip()
-            if not section:
-                continue
-            
-            # "미리 확인해야 할 사항" → "TM대상군 분류 및 사전 준비사항"
-            if "미리 확인해야 할 사항" in section or "TM대상군 분류" in section:
-                # 제목 제거
-                content = section.replace("### 📌 미리 확인해야 할 사항", "")
-                content = content.replace("### 📌 TM대상군 분류 및 사전 준비사항", "")
-                content = content.replace("📌 미리 확인해야 할 사항", "")
-                content = content.replace("📌 TM대상군 분류 및 사전 준비사항", "")
-                content = content.replace("### 미리 확인해야 할 사항", "")
-                content = content.replace("[TM 대상군 분류 및 사전 준비사항]", "").strip()
-                st.info("### 📌 TM대상군 분류 및 사전 준비사항\n\n" + content)
-            
-            elif "TM 스크립트" in section:
-                # 제목 제거
-                content = section.replace("### 💬 TM 스크립트", "")
-                content = content.replace("💬 TM 스크립트", "").strip()
-                # 첫 번째 TM 스크립트(오프닝 포함)인 경우 "오프닝 추천"으로 표시
-                if "1️⃣ 오프닝" in section and "옵션 1" in section:
-                    st.success("### 💬 오프닝 추천\n\n" + content)
-                else:
-                    st.success("### 💬 TM 스크립트\n\n" + content)
-            
-            elif "비언어적 코칭" in section:
-                # 제목 제거
-                content = section.replace("### 🎭 비언어적 코칭", "")
-                content = content.replace("🎭 비언어적 코칭", "").strip()
-                # 제목을 박스 안으로 이동
-                st.warning("### 🎭 비언어적 코칭\n\n" + content)
-            
-            elif "종합 Tip" in section or "우수사례 공통 패턴" in section:
-                st.markdown("🎯 종합 Tip")
-                st.markdown(section)
+        # SCRIPT/COACHING/TIP 섹션 표시
+        display_script_with_colors(full_script)
         
         # TTS용 스크립트 추출
         st.session_state['generated_script'] = full_script

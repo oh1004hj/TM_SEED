@@ -6,7 +6,7 @@ Alice의 4단 구조 + 우수사례 패턴 반영
 import streamlit as st
 
 
-def generate_script(model=None, cases=None, user_request="", current_result=None):
+def generate_script(model=None, cases=None, user_request="", current_result=None, device_info=""):
     """
     우수사례 기반 맞춤형 스크립트 생성 (Alice의 4단 구조)
     오프닝은 Python에서 강제 삽입하여 항상 고정
@@ -77,6 +77,9 @@ def generate_script(model=None, cases=None, user_request="", current_result=None
 
 ### 💬 TM 스크립트
 
+#### 1️⃣ 도입 (인사 및 신뢰 형성)
+[단골 등록하신 표현 필수, 자연스러운 인사]
+
 #### 2️⃣ 확인 질문 (고객 상황 파악)
 [확인 질문 형태로 작성, 단정적 표현 금지]
 예: "혹시 자녀분 중에 초등학생 계신가요?"
@@ -108,22 +111,29 @@ def generate_script(model=None, cases=None, user_request="", current_result=None
 
 ---
 
+참고: {device_info}
+
 주의사항:
 1. 마크다운 형식으로 출력하되, 코드블록(```)은 사용하지 마세요.
 2. "단골 등록하신" 표현 필수 사용
 3. 확인 질문은 "혹시 ~계신가요?" 형태 (단정 금지)
 4. 구체적 숫자 언급 ("25% 할인", "20만원" 등)
+5. 갤럭시는 매년 출시된다. "S26이 4년 만에 출시된다"는 표현은 사실과 다르므로 절대 사용 금지.
+   올바른 표현: "4년 동안 사용하신 S22에서 S26으로 교체" (교체 기간이 4년인 것이지, 출시 주기가 아님)
+6. S22 사용 고객의 경우 "4년 동안 사용하신 S22에서 S26으로 교체하시는" 표현 사용
 """
     
     try:
         # Gemini 호출 (오프닝 없이)
-        response = model.generate_content(prompt)
+        response = model.models.generate_content(
+            model='gemini-3-flash-preview',
+            contents=[prompt]
+        )
         ai_result = response.text.strip()
         
         # Python에서 오프닝 강제 삽입
-        fixed_opening = """### 💬 TM 스크립트
-
-#### 1️⃣ 오프닝 (3초 이내)
+        # Python에서 오프닝 강제 삽입 (1️⃣ 오프닝만 - 헤더 없이)
+        fixed_opening = """#### 1️⃣ 오프닝 (3초 이내)
 
 **옵션 1 (랜드마크 포함 - 추천):**
 안녕하세요, 고객님! 단골 등록하신 [랜드마크]에 위치한 SK텔레콤 [매장명]입니다.
@@ -133,25 +143,22 @@ def generate_script(model=None, cases=None, user_request="", current_result=None
 안녕하세요, 고객님! 단골 등록하신 SK텔레콤 [매장명]입니다.
 이번에 단골 고객님께만 드리는 특별한 혜택이 있어 연락드렸습니다.
 
----
-
 """
         
-        # AI 결과에서 "### 💬 TM 스크립트" 찾아서 오프닝과 함께 재조립
+        # AI 결과에서 "### 💬 TM 스크립트" 찾아서 오프닝을 별도 섹션으로 삽입
+        # 오프닝(OPENING)과 TM 스크립트(SCRIPT)를 각각 다른 박스로 구분
+        # 오프닝을 TM 스크립트 섹션 앞에 직접 삽입 (HTML과 동일 구조)
+        opening_block = "### 💬 오프닝 추천\n\n" + fixed_opening + "\n\n### 💬 TM 스크립트"
+        
         if "### 💬 TM 스크립트" in ai_result:
-            # AI가 생성한 "### 💬 TM 스크립트"를 기준으로 분리
             parts = ai_result.split("### 💬 TM 스크립트", 1)
-            
-            # 재조립: 앞부분 + 오프닝 + "### 💬 TM 스크립트" + 뒷부분(AI 생성 내용)
-            final_result = parts[0] + fixed_opening + "### 💬 TM 스크립트\n\n" + parts[1]
+            final_result = parts[0] + opening_block + parts[1]
         else:
-            # 못 찾으면 미리 확인사항 뒤에 오프닝 삽입
             if "---" in ai_result:
                 first_separator = ai_result.find("---")
-                final_result = ai_result[:first_separator + 3] + "\n\n" + fixed_opening + ai_result[first_separator + 3:]
+                final_result = ai_result[:first_separator + 3] + "\n\n" + opening_block + "\n\n" + ai_result[first_separator + 3:]
             else:
-                # 최후의 수단: 그냥 뒤에 붙임
-                final_result = ai_result + "\n\n" + fixed_opening
+                final_result = ai_result + "\n\n" + opening_block + "\n\n"
         
         # 섹션 마커 추가 (HTML 색상 구분용)
         final_result = add_section_markers(final_result)
@@ -189,12 +196,17 @@ def add_section_markers(markdown_text):
             current_section = 'INFO'
             section_content = [f'<SECTION:{current_section}>', line]
         
-        elif '💬 TM 스크립트' in line:
-            # 이전 섹션 닫기
+        elif '💬 오프닝 추천' in line:
+            # 오프닝 추천 → OPENING 섹션으로 분리
             if current_section and section_content:
                 result += '\n'.join(section_content) + f'\n</SECTION:{current_section}>\n\n'
-            
-            # 새 섹션 시작
+            current_section = 'OPENING'
+            section_content = [f'<SECTION:{current_section}>', line]
+        
+        elif '💬 TM 스크립트' in line:
+            # 항상 SCRIPT 섹션 새로 시작 (OPENING과 분리)
+            if current_section and section_content:
+                result += '\n'.join(section_content) + f'\n</SECTION:{current_section}>\n\n'
             current_section = 'SCRIPT'
             section_content = [f'<SECTION:{current_section}>', line]
         
@@ -274,7 +286,10 @@ Alice의 4단 구조로 스크립트를 작성하고, JSON 형식으로 출력�
 """
     
     try:
-        response = model.generate_content(prompt)
+        response = model.models.generate_content(
+            model='gemini-3-flash-preview',
+            contents=[prompt]
+        )
         result_text = response.text.strip()
         
         # JSON 마크다운 제거

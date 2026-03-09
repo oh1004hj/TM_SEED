@@ -110,6 +110,29 @@ def load_google_sheets_cases(sheets_client, sheet_url):
             
             # 필터 조건: 성공 + 80점 이상
             if call_result == "성공" and total_score >= 80:
+                # 상세JSON 파싱 (추천스크립트 등 상세 데이터 추출)
+                detail = {}
+                raw_json = row.get("상세JSON", "")
+                if raw_json:
+                    try:
+                        detail = json.loads(raw_json) if isinstance(raw_json, str) else raw_json
+                    except Exception:
+                        detail = {}
+                
+                # 최상위 컬럼 우선, 없으면 상세JSON에서 가져오기
+                def get_val(col_key, json_key=None):
+                    v = row.get(col_key, "")
+                    if not v and detail:
+                        v = detail.get(json_key or col_key, "")
+                    return v
+                
+                # 강점/개선점/코칭조언은 리스트일 수 있으므로 문자열 변환
+                def get_list_val(col_key, json_key=None):
+                    v = get_val(col_key, json_key)
+                    if isinstance(v, list):
+                        return ", ".join(str(i) for i in v)
+                    return v or ""
+                
                 filtered_data.append({
                     "출처": "Google Sheets",
                     "분석날짜": row.get("분석날짜", ""),
@@ -117,14 +140,15 @@ def load_google_sheets_cases(sheets_client, sheet_url):
                     "매장코드": row.get("매장코드", ""),
                     "통화시간": row.get("통화시간_초", ""),
                     "통화결과": call_result,
-                    "내용요약": row.get("내용요약", ""),
-                    "고객니즈": row.get("고객니즈", ""),
-                    "강점": row.get("강점", ""),
-                    "개선점": row.get("개선점", ""),
-                    "추천스크립트": row.get("추천스크립트", ""),
+                    "내용요약": get_val("내용요약"),
+                    "고객니즈": get_val("고객니즈"),
+                    "강점": get_list_val("강점"),
+                    "개선점": get_list_val("개선점"),
+                    "추천스크립트": get_val("추천스크립트"),
                     "종합점수": total_score,
-                    "코칭조언": row.get("코칭조언", ""),
-                    "비언어적코칭": row.get("억양가이드", "")
+                    "코칭조언": get_list_val("코칭조언"),
+                    "비언어적코칭": get_val("억양가이드", "억양가이드"),
+                    "상세JSON": raw_json
                 })
         
         return filtered_data
